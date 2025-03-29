@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Detection | Farmer Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="app-title">
+            <i class="fas fa-leaf me-2"></i>
+            Crop Disease Detection Assistant
+        </h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" role="tab" aria-controls="camera" aria-selected="true">
+                            <i class="fas fa-camera me-1"></i> Camera
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab" aria-controls="upload" aria-selected="false">
+                            <i class="fas fa-upload me-1"></i> Upload
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text" type="button" role="tab" aria-controls="text" aria-selected="false">
+                            <i class="fas fa-question-circle me-1"></i> Ask Question
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="myTabContent">
+                    <!-- Location and Crop Type Input (common for all tabs) -->
+                    <div class="row location-row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location-input" class="form-label">
+                                    <i class="fas fa-map-marker-alt"></i> Your Location
+                                </label>
+                                <input type="text" class="form-control" id="location-input" placeholder="e.g., Punjab, Maharashtra, etc.">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="crop-type-input" class="form-label">
+                                    <i class="fas fa-seedling"></i> Crop Type
+                                </label>
+                                <input type="text" class="form-control" id="crop-type-input" placeholder="e.g., Tomato, Apple, Wheat, etc.">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Camera Tab -->
+                    <div class="tab-pane fade show active" id="camera" role="tabpanel" aria-labelledby="camera-tab">
+                        <div id="video-container">
+                            <video id="video" autoplay playsinline></video>
+                            <button id="capture-btn" class="btn btn-primary">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                        <div id="captured-photo" style="display: none;">
+                            <canvas id="canvas"></canvas>
+                            <button id="retake-btn" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Retake
+                            </button>
+                        </div>
+                        <div class="camera-controls mt-3">
+                            <button id="submit-photo" class="btn btn-success" style="display: none;" onclick="handleSubmitPhoto()">
+                                <i class="fas fa-microscope me-1"></i> Analyze Photo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Tab -->
+                    <div class="tab-pane fade" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                        <div>
+                            <div class="mb-3">
+                                <label for="file-upload" class="form-label">
+                                    <i class="fas fa-file-image me-1"></i> Upload crop image
+                                </label>
+                                <input class="form-control" type="file" id="file-upload" accept="image/*">
+                            </div>
+                            <div id="preview-container" style="display: none;" class="mb-3">
+                                <img id="image-preview" class="img-fluid" src="#" alt="Preview">
+                            </div>
+                            <div class="mb-3">
+                                <label for="upload-query" class="form-label">
+                                    <i class="fas fa-comment-dots me-1"></i> Optional question
+                                </label>
+                                <input type="text" class="form-control" id="upload-query" placeholder="E.g., How do I treat this disease?">
+                            </div>
+                            <button type="button" id="analyze-image-btn" class="btn btn-primary" onclick="handleAnalyzeImage()">
+                                <i class="fas fa-microscope me-1"></i> Analyze Image
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Query Tab -->
+                    <div class="tab-pane fade" id="text" role="tabpanel" aria-labelledby="text-tab">
+                        <div>
+                            <div class="mb-3">
+                                <label for="text-query" class="form-label">
+                                    <i class="fas fa-question-circle me-1"></i> Ask about crop diseases
+                                </label>
+                                <textarea class="form-control" id="text-query" rows="3" placeholder="E.g., What are the symptoms of tomato early blight?"></textarea>
+                            </div>
+                            <button type="button" id="ask-question-btn" class="btn btn-primary" onclick="handleAskQuestion()">
+                                <i class="fas fa-paper-plane me-1"></i> Ask Question
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div class="loading-spinner text-center" style="display: none;">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing your crop...</p>
+        </div>
+        
+        <!-- Results Card -->
+        <div class="card result-card" style="display: none;">
+            <div class="card-header">
+                <h5 class="result-title mb-0">
+                    <i class="fas fa-leaf me-2"></i> Analysis Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="disease-result" class="mb-4">
+                    <div class="disease-tag" id="disease-name-tag"></div>
+                    <p>Confidence level:</p>
+                    <div class="confidence-bar">
+                        <div class="confidence-level" id="confidence-bar"></div>
+                    </div>
+                </div>
+                <div id="llm-response">
+                    <h6><i class="fas fa-info-circle me-2"></i>Expert Analysis:</h6>
+                    <div id="response-content" class="p-3 bg-light rounded response-content"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This application helps farmers identify crop diseases and provides treatment recommendations.</p>
+            <p>Always consult with agricultural experts for professional advice.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple inline function handlers - these will call our main.js functions
+        function handleSubmitPhoto() {
+            console.log('Submit photo button clicked');
+            // This should trigger the submitPhotoButton click handler in main.js
+            document.dispatchEvent(new CustomEvent('submitPhoto'));
+        }
+        
+        function handleAnalyzeImage() {
+            console.log('Analyze image button clicked');
+            const fileInput = document.getElementById('file-upload');
+            const query = document.getElementById('upload-query').value;
+            
+            if (fileInput.files.length > 0) {
+                showLoading();
+                
+                const imgElement = document.getElementById('image-preview');
+                if (imgElement.complete) {
+                    // Dispatch a custom event that our main.js will listen for
+                    document.dispatchEvent(new CustomEvent('analyzeImage', { 
+                        detail: { fileInput, query }
+                    }));
+                } else {
+                    alert('Please wait for the image to load completely');
+                }
+            } else {
+                alert('Please select an image to upload');
+            }
+        }
+        
+        function handleAskQuestion() {
+            console.log('Ask question button clicked');
+            const textQuery = document.getElementById('text-query').value;
+            
+            if (textQuery.trim() !== '') {
+                showLoading();
+                // Dispatch a custom event that our main.js will listen for
+                document.dispatchEvent(new CustomEvent('askQuestion', { 
+                    detail: { textQuery }
+                }));
+            } else {
+                alert('Please enter a question');
+            }
+        }
+        
+        function showLoading() {
+            document.querySelector('.loading-spinner').style.display = 'block';
+            document.querySelector('.result-card').style.display = 'none';
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

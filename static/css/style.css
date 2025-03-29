@@ -1,0 +1,122 @@
+body {
+    padding-top: 20px;
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.card-header {
+    background-color: #198754;
+    color: white;
+}
+.card-header .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+.card-header .nav-link.active {
+    color: white;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+#video-container, #captured-photo, #preview-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #dee2e6;
+}
+#video {
+    width: 100%;
+    background-color: #000;
+}
+#capture-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#retake-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 10;
+}
+.loading-spinner {
+    display: none;
+    margin: 20px auto;
+}
+.result-card {
+    display: none;
+}
+.camera-controls {
+    text-align: center;
+    margin: 10px 0;
+}
+.tab-pane {
+    padding: 20px;
+}
+.disease-tag {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background-color: #f8d7da;
+    color: #842029;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.confidence-bar {
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.confidence-level {
+    height: 100%;
+    background-color: #198754;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+.app-title {
+    color: #198754;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.response-content {
+    line-height: 1.6;
+}
+.response-content h1, .response-content h2, .response-content h3 {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.response-content ul, .response-content ol {
+    padding-left: 20px;
+}
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+.location-row {
+    margin-bottom: 15px;
+}
