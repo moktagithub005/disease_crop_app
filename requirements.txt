@@ -5,3 +5,5 @@ numpy
 tensorflow
 requests
 gunicorn
+python-dotenv
+streamlit
